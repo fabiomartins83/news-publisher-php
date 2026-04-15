@@ -2,6 +2,25 @@ function msg(t) {
   alert(t);
 }
 
+// 🔥 CONTROLE DE FOCO
+let ultimoFoco = null;
+
+// captura qualquer foco no documento
+document.addEventListener("focusin", (e) => {
+  if (["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName)) {
+    ultimoFoco = e.target;
+  }
+});
+
+// restaura foco anterior
+function restaurarFoco() {
+  if (ultimoFoco) {
+    ultimoFoco.focus();
+  } else {
+    document.getElementById("content").focus();
+  }
+}
+
 // ---------------- CARREGAR ----------------
 async function carregar() {
   const res = await fetch("api.php?path=materias");
@@ -28,6 +47,7 @@ async function criar() {
 
   if (!title.value.trim() || !content.value.trim()) {
     msg("Preencha título e conteúdo");
+    restaurarFoco();
     return;
   }
 
@@ -69,6 +89,7 @@ async function criar() {
     if (r.ok) {
       limparFormulario();
       await carregar();
+      document.getElementById("content").focus();
       msg("Matéria salva");
     } else {
       console.error(r);
@@ -79,7 +100,7 @@ async function criar() {
     console.error(err);
     msg("Erro de conexão");
   }
-  focarConteudo();
+
 }
 
 // ---------------- EDITAR ----------------
@@ -104,7 +125,7 @@ function editar(id) {
 
 function fecharModal() {
   document.getElementById("modal").style.display = "none";
-  focarConteudo();
+  restaurarFoco();
 }
 
 async function salvarEdicao() {
@@ -123,8 +144,8 @@ async function salvarEdicao() {
   });
 
   fecharModal();
-  carregar();
-  focarConteudo();
+  await carregar();
+  restaurarFoco();
 }
 
 // ---------------- DELETE ----------------
@@ -142,8 +163,9 @@ async function deletar(id) {
     await carregar();
   }
 
-  focarConteudo(); // ✅ sempre executa
+  restaurarFoco(); // ✅ sempre
 }
+
 // ---------------- LIMPAR ----------------
 function limparFormulario() {
   content.value = "";
@@ -156,20 +178,20 @@ function limparFormulario() {
   chapeu.value = "";
   editoria.value = "";
   path.value = "";
-  focarConteudo();
+  document.getElementById("content").focus();
 }
 
 // ---------------- EXPORT ----------------
 async function exportarJSON() {
   await fetch("api.php?path=export_json");
-  focarConteudo();
   msg("JSON gerado");
+  restaurarFoco();
 }
 
 async function exportarCSV() {
   await fetch("api.php?path=export_csv");
-  focarConteudo();
   msg("CSV gerado");
+  restaurarFoco();
 }
 
 // ---------------- EXCLUIR TABELA ----------------
@@ -182,14 +204,14 @@ async function excluirTabela() {
     await carregar();
   }
 
-  focarConteudo(); // ✅ sempre executa
+  restaurarFoco(); // ✅ sempre
 }
+
 // ---------------- EDITORIAS ----------------
 async function carregarEditorias() {
   const res = await fetch("api.php?path=editorias");
   const data = await res.json();
 
-  // 🔥 PROTEÇÃO IMPORTANTE
   if (!Array.isArray(data)) {
     console.error("Erro ao carregar editorias:", data);
     return;
@@ -207,12 +229,8 @@ async function carregarEditorias() {
 }
 
 // ---------------- INIT ----------------
-function focarConteudo() {
-  document.getElementById("content").focus();
-}
-
-// ---------------- INIT ----------------
 window.onload = () => {
   carregarEditorias();
   carregar();
+  document.getElementById("content").focus();
 };
