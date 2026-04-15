@@ -247,29 +247,101 @@ if ($path === "tabela") {
 // ---------------- EXPORT JSON ----------------
 if ($path === "export_json") {
 
-  $res = $db->query("SELECT * FROM materias ORDER BY id DESC");
-  $data = [];
+  // 1. matérias
+  $resMaterias = $db->query("SELECT * FROM materias ORDER BY id DESC");
+  $materias = [];
 
-  while ($m = $res->fetchArray(SQLITE3_ASSOC)) {
-
-    $aut = $db->query("
-      SELECT NomeAutor FROM autores a
-      JOIN materia_autores ma ON ma.autor_id = a.id
-      WHERE ma.materia_id = ".$m['id']
-    );
-
-    $lista = [];
-    while ($a = $aut->fetchArray(SQLITE3_ASSOC)) {
-      $lista[] = $a['NomeAutor'];
-    }
-
-    $m['author'] = implode(", ", $lista);
-    $data[] = $m;
+  while ($m = $resMaterias->fetchArray(SQLITE3_ASSOC)) {
+    $materias[] = $m;
   }
 
-  file_put_contents("conteudo.json", json_encode(["conteudo"=>$data], JSON_PRETTY_PRINT));
+  // 2. relações (igual Express)
+  $resRel = $db->query("
+    SELECT ma.materia_id, a.NomeAutor
+    FROM materia_autores ma
+    JOIN autores a ON a.id = ma.autor_id
+  ");
 
-  echo json_encode(["ok"=>true]);
+  $mapa = [];
+
+  while ($r = $resRel->fetchArray(SQLITE3_ASSOC)) {
+    if (!isset($mapa[$r["materia_id"]])) {
+      $mapa[$r["materia_id"]] = [];
+    }
+    $mapa[$r["materia_id"]][] = $r["NomeAutor"];
+  }
+
+  // 3. montar resultado (map estilo JS)
+  $resultado = [];
+
+  foreach ($materias as $m) {
+
+    $autores = isset($mapa[$m["id"]])
+      ? implode(", ", $mapa[$m["id"]])
+      : "";
+
+    // 🔥 DATA ISO PADRÃO (igual seu modelo)
+    $dataISO = date("c");
+
+    $item = [
+      "id" => (int)$m["id"],
+      "date" => $dataISO,
+      "name" => null,
+      "type" => "reportagem",
+      "publishdate" => $dataISO,
+
+      "title" => $m["title"],
+      "content" => $m["content"],
+      "linhafina" => $m["linhafina"],
+
+      "abstract" => null,
+      "path" => $m["path"] ?? "",
+
+      "url" => $m["url"],
+      "image" => $m["image"],
+      "chapeu" => $m["chapeu"],
+
+      "category" => "geral",
+      "editoria" => strtolower($m["editoria"] ?? ""),
+
+      "tema" => null,
+      "destaque" => null,
+
+      "imgrights" => $m["imgrights"] ?? "Reprodução",
+      "imgdescript" => null,
+
+      "location" => "São Paulo",
+
+      "cortexto" => "black",
+      "corfundo" => "standard",
+      "fontetexto" => null,
+      "entrelinhas" => "standard",
+      "margin" => "standard",
+      "padding" => "standard",
+      "textalign" => null,
+      "paragrafo" => 0,
+
+      "comentarios" => null,
+      "usrviews" => null,
+      "maislidas" => null,
+      "importante" => null,
+
+      "author" => $autores
+    ];
+
+    $resultado[] = $item;
+  }
+
+  // 4. salvar arquivo
+  file_put_contents(
+    "conteudo.json",
+    json_encode(
+      ["conteudo" => $resultado],
+      JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
+    )
+  );
+
+  echo json_encode(["ok" => true]);
   exit;
 }
 

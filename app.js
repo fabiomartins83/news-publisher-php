@@ -79,6 +79,7 @@ async function criar() {
     console.error(err);
     msg("Erro de conexão");
   }
+  focarConteudo();
 }
 
 // ---------------- EDITAR ----------------
@@ -103,6 +104,7 @@ function editar(id) {
 
 function fecharModal() {
   document.getElementById("modal").style.display = "none";
+  focarConteudo();
 }
 
 async function salvarEdicao() {
@@ -122,22 +124,26 @@ async function salvarEdicao() {
 
   fecharModal();
   carregar();
+  focarConteudo();
 }
 
 // ---------------- DELETE ----------------
 async function deletar(id) {
 
-  if (!confirm("Deseja excluir?")) return;
+  const confirmado = confirm("Deseja excluir?");
 
-  await fetch("api.php?path=delete", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ id })
-  });
+  if (confirmado) {
+    await fetch("api.php?path=delete", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ id })
+    });
 
-  carregar();
+    await carregar();
+  }
+
+  focarConteudo(); // ✅ sempre executa
 }
-
 // ---------------- LIMPAR ----------------
 function limparFormulario() {
   content.value = "";
@@ -150,27 +156,34 @@ function limparFormulario() {
   chapeu.value = "";
   editoria.value = "";
   path.value = "";
+  focarConteudo();
 }
 
 // ---------------- EXPORT ----------------
 async function exportarJSON() {
   await fetch("api.php?path=export_json");
+  focarConteudo();
   msg("JSON gerado");
 }
 
 async function exportarCSV() {
   await fetch("api.php?path=export_csv");
+  focarConteudo();
   msg("CSV gerado");
 }
 
 // ---------------- EXCLUIR TABELA ----------------
 async function excluirTabela() {
-  if (!confirm("Excluir tudo?")) return;
 
-  await fetch("api.php?path=tabela");
-  carregar();
+  const confirmado = confirm("Excluir tudo?");
+
+  if (confirmado) {
+    await fetch("api.php?path=tabela");
+    await carregar();
+  }
+
+  focarConteudo(); // ✅ sempre executa
 }
-
 // ---------------- EDITORIAS ----------------
 async function carregarEditorias() {
   const res = await fetch("api.php?path=editorias");
@@ -192,6 +205,12 @@ async function carregarEditorias() {
     select.appendChild(opt);
   });
 }
+
+// ---------------- INIT ----------------
+function focarConteudo() {
+  document.getElementById("content").focus();
+}
+
 // ---------------- INIT ----------------
 window.onload = () => {
   carregarEditorias();
