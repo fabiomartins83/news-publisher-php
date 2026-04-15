@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>News Publisher Web</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #f5f5f5;
+  margin: 0;
+}
+
+/* TÍTULO */
+h1 {
+  text-align: center;
+  margin: 20px 0;
+}
+
+/* CONTAINER PRINCIPAL (GRID ESTÁVEL) */
+.container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 20px;
+  align-items: start;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* COLUNAS */
+.left, .right {
+  display: flex;
+  flex-direction: column;
+}
+
+/* STICKY APENAS NO FORM */
+.left {
+  position: sticky;
+  top: 20px;
+}
+
+/* TÍTULOS */
+.left h3,
+.right h3 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+/* CARD DO FORM (AGRUPA MELHOR OS CAMPOS) */
+.form-card {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* CARD DA LISTA */
+.card {
+  background: white;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* INPUTS */
+input, select, textarea {
+  width: 100%;
+  margin: 6px 0;
+  padding: 8px;
+  box-sizing: border-box;
+  background: white;
+  border: 1px solid #ccc;
+  font-family: Arial;
+  font-size: 14px;
+  border-radius: 5px;
+}
+
+/* BOTÕES */
+button {
+  margin: 5px 5px 5px 0;
+  padding: 8px;
+  cursor: pointer;
+}
+
+/* BOTÕES FORM */
+.form-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* AÇÕES */
+.actions {
+  display: flex;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+/* BOTTOM BAR */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #222;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.bottom-bar button {
+  background: #fff;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+/* MODAL */
+#modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+}
+
+#modal > div {
+  background: white;
+  padding: 20px;
+  width: 500px;
+  border-radius: 8px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>News Publisher Web</h1>
+
+<div class="container">
+
+<div class="left">
+<h3>Inserir nova matéria</h3>
+
+<div class="form-card">
+
+<input id="materia_id" placeholder="ID (automático)" disabled>
+<textarea id="content" placeholder="Conteúdo"></textarea>
+<input id="title" placeholder="Título">
+<input id="linhafina" placeholder="Linha fina">
+<input id="author" placeholder="Autor">
+<input id="url" placeholder="Link para matéria completa">
+<input id="image" placeholder="Caminho da imagem">
+<input id="imgrights" placeholder="Direitos da imagem">
+<input id="chapeu" placeholder="Chapéu">
+
+<select id="editoria"></select>
+
+<input id="path" placeholder="Caminho da pasta">
+
+<div class="form-buttons">
+<button onclick="criar()">Salvar</button>
+<button onclick="limparFormulario()">Limpar</button>
+</div>
+
+</div>
+</div>
+
+<div class="right">
+<h3>Matérias incluídas</h3>
+<div id="lista"></div>
+</div>
+
+</div>
+
+<div class="bottom-bar">
+<button onclick="exportarJSON()">Exportar JSON</button>
+<button onclick="exportarCSV()">Exportar CSV</button>
+<button onclick="excluirTabela()">Excluir Tabela</button>
+</div>
+
+<!-- MODAL -->
+<div id="modal">
+  <div>
+    <h3>Editar matéria</h3>
+    <input id="edit_title">
+    <input id="edit_publishdate">
+    <textarea id="edit_content"></textarea>
+    <button onclick="salvarEdicao()">Salvar</button>
+    <button onclick="fecharModal()">Cancelar</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
